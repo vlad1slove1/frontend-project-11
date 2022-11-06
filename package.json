@@ -2,6 +2,7 @@
   "name": "@hexlet/code",
   "version": "1.0.0",
   "description": "Third frontend project",
+  "private": "true",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -30,7 +31,6 @@
   "homepage": "https://github.com/vlad1slove1/frontend-project-11#readme",
   "devDependencies": {
     "@webpack-cli/generators": "^2.5.0",
-    "bootstrap": "^5.2.2",
     "css-loader": "^6.7.1",
     "eslint": "^8.26.0",
     "eslint-config-airbnb-base": "^15.0.0",
@@ -38,11 +38,7 @@
     "exports-loader": "^4.0.0",
     "html-webpack-plugin": "^5.5.0",
     "imports-loader": "^4.0.1",
-    "node-sass": "^7.0.3",
-    "postcss-loader": "^7.0.1",
     "prettier": "^2.7.1",
-    "resolve-url-loader": "^5.0.0",
-    "sass-loader": "^13.1.0",
     "style-loader": "^3.3.1",
     "url-loader": "^4.1.1",
     "webpack": "^5.74.0",
@@ -51,6 +47,12 @@
     "workbox-webpack-plugin": "^6.5.4"
   },
   "dependencies": {
-    "bootstrap-loader": "^4.0.0"
+    "autoprefixer": "^10.4.13",
+    "bootstrap": "^5.2.2",
+    "bootstrap-loader": "^4.0.0",
+    "lodash": "^4.17.21",
+    "on-change": "^4.0.1",
+    "postcss-cli": "^10.0.0",
+    "yup": "^0.32.11"
   }
 }
