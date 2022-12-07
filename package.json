@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/vlad1slove1/frontend-project-11#readme",
   "devDependencies": {
-    "@webpack-cli/generators": "^2.5.0",
+    "@webpack-cli/generators": "^3.0.1",
     "css-loader": "^6.7.1",
     "eslint": "^8.26.0",
     "eslint-config-airbnb-base": "^15.0.0",
@@ -38,6 +38,7 @@
     "exports-loader": "^4.0.0",
     "html-webpack-plugin": "^5.5.0",
     "imports-loader": "^4.0.1",
+    "mini-css-extract-plugin": "^2.7.2",
     "prettier": "^2.7.1",
     "style-loader": "^3.3.1",
     "url-loader": "^4.1.1",
@@ -49,7 +50,7 @@
   "dependencies": {
     "autoprefixer": "^10.4.13",
     "bootstrap": "^5.2.2",
-    "bootstrap-loader": "^4.0.0",
+    "bootstrap-loader": "^2.2.0",
     "i18next": "^22.0.6",
     "lodash": "^4.17.21",
     "on-change": "^4.0.1",
