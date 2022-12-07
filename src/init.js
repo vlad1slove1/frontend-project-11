@@ -1,3 +1,4 @@
+import 'bootstrap';
 import i18next from 'i18next';
 import * as yup from 'yup';
 import view from './view.js';
