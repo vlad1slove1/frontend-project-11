@@ -8,5 +8,15 @@ export default {
       rssInvalid: 'Source contains invalid RSS',
       rssDuplicated: 'RSS already exists',
     },
+    elements: {
+      button: 'Add',
+      feeds: 'Feeds',
+      posts: 'Posts',
+      postButton: 'Watch',
+    },
+    modal: {
+      linkButton: 'Read completely',
+      closeButton: 'Close',
+    },
   },
 };

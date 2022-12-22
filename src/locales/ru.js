@@ -8,5 +8,15 @@ export default {
       rssInvalid: 'Ресурс не содержит валидный RSS',
       rssDuplicated: 'RSS уже существует',
     },
+    elements: {
+      button: 'Добавить',
+      feeds: 'Фиды',
+      posts: 'Посты',
+      postButton: 'Просмотр',
+    },
+    modal: {
+      linkButton: 'Читать полностью',
+      closeButton: 'Закрыть',
+    },
   },
 };

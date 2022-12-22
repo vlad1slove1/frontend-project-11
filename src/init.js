@@ -1,8 +1,10 @@
 import 'bootstrap';
 import i18next from 'i18next';
 import * as yup from 'yup';
+import axios from 'axios';
 import view from './view.js';
 import resources from './locales/resources.js';
+// import parse from './parse.js';
 
 export default () => {
   const state = {
@@ -12,6 +14,7 @@ export default () => {
       url: '',
     },
     feeds: [],
+    posts: [],
   };
 
   const elements = {
@@ -38,6 +41,17 @@ export default () => {
     },
   });
 
+  const loadRss = (url) => {
+    const encodedUrl = encodeURIComponent(url);
+    const proxy = `https://allorigins.hexlet.app/get?disableCache=true&url=${encodedUrl}`;
+
+    return axios.get(proxy)
+      .then(({ response }) => response.contents)
+      .catch(() => {
+        throw new Error('errors.rssInvalid');
+      });
+  };
+
   const watchedState = view(state, elements, i18n);
 
   elements.form.addEventListener('submit', async (event) => {
@@ -52,7 +66,7 @@ export default () => {
       .url('urlInvalid')
       .notOneOf(urls, 'rssDuplicated');
 
-    await schema.validate(currentUrl)
+    schema.validate(currentUrl)
       .then(() => {
         watchedState.form.valid = true;
         watchedState.form.url = currentUrl;
@@ -60,6 +74,8 @@ export default () => {
         watchedState.form.error = null;
         console.log('+ valid form state', state);
       })
+      .then(() => loadRss(currentUrl))
+      .then((response) => console.log(response))
       .catch((error) => {
         switch (error.type) {
           case 'url':
@@ -77,7 +93,8 @@ export default () => {
             break;
 
           default:
-            throw new Error(`##unknown error type: ${error.type}`);
+            break;
+            // throw new Error(`##unknown error type: ${error.type}`);
         }
       });
   });
