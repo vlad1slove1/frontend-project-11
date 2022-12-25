@@ -1,18 +1,19 @@
 // Generated using webpack-cli https://github.com/webpack/webpack-cli
 
-import path from 'path';
+import path, { dirname } from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import { GenerateSW } from 'workbox-webpack-plugin';
 import { fileURLToPath } from 'url';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const filename = fileURLToPath(import.meta.url);
+const dirName = dirname(filename);
+
 const isProduction = process.env.NODE_ENV === 'production';
 
 const config = {
   entry: './src/index.js',
   output: {
-    path: path.join(__dirname, 'dist'),
+    path: path.resolve(dirName, 'dist'),
   },
   devServer: {
     open: true,
@@ -48,8 +49,6 @@ const config = {
 export default () => {
   if (isProduction) {
     config.mode = 'production';
-
-    config.plugins.push(new GenerateSW());
   } else {
     config.mode = 'development';
   }
