@@ -4,14 +4,14 @@ import * as yup from 'yup';
 import axios from 'axios';
 import view from './view.js';
 import resources from './locales/resources.js';
-// import parse from './parse.js';
+import parse from './parse.js';
 
 export default () => {
   const state = {
     form: {
-      valid: true,
+      valid: false,
       error: null,
-      url: '',
+      urls: [],
     },
     feeds: [],
     posts: [],
@@ -39,6 +39,9 @@ export default () => {
     string: {
       url: i18n.t('errors.urlInvalid'),
     },
+    mixed: {
+      notOneOf: i18n.t('errors.rssDuplicated'),
+    },
   });
 
   const loadRss = (url) => {
@@ -46,55 +49,65 @@ export default () => {
     const proxy = `https://allorigins.hexlet.app/get?disableCache=true&url=${encodedUrl}`;
 
     return axios.get(proxy)
-      .then(({ response }) => response.contents)
+      .then((response) => response.data.contents)
       .catch(() => {
-        throw new Error('errors.rssInvalid');
+        throw new Error('parsingError');
       });
   };
 
   const watchedState = view(state, elements, i18n);
 
-  elements.form.addEventListener('submit', async (event) => {
+  elements.form.addEventListener('submit', (event) => {
     event.preventDefault();
 
     const formData = new FormData(event.target);
     const currentUrl = formData.get('url').trim();
-    const urls = state.feeds.map((feed) => feed);
 
     const schema = yup.string()
       .required()
-      .url('urlInvalid')
-      .notOneOf(urls, 'rssDuplicated');
+      .url(i18n.t('errors.urlInvalid'))
+      .notOneOf(watchedState.form.urls, i18n.t('errors.rssDuplicated'));
 
     schema.validate(currentUrl)
       .then(() => {
         watchedState.form.valid = true;
-        watchedState.form.url = currentUrl;
-        watchedState.feeds.push(currentUrl);
-        watchedState.form.error = null;
-        console.log('+ valid form state', state);
+        watchedState.form.urls.push(currentUrl);
+        return loadRss(currentUrl);
       })
-      .then(() => loadRss(currentUrl))
-      .then((response) => console.log(response))
+      .then((response) => {
+        const { feed, posts } = parse(response);
+        watchedState.feeds = [...watchedState.feeds, feed];
+        watchedState.posts = [...watchedState.posts, posts];
+
+        console.log(state);
+      })
       .catch((error) => {
+        // console.log(error);
         switch (error.type) {
           case 'url':
             watchedState.form.valid = false;
             watchedState.form.error = i18n.t('errors.urlInvalid');
-            console.log(`- validation error: ${error.type}`);
+            console.log(`- validation error: ${error}`);
             console.log('- invalid form state', state);
             break;
 
           case 'notOneOf':
             watchedState.form.valid = false;
             watchedState.form.error = i18n.t('errors.rssDuplicated');
-            console.log(`- validation error: ${error.type}`);
+            console.log(`- validation error: ${error}`);
+            console.log('- invalid form state', state);
+            break;
+
+          case 'parsingError':
+            watchedState.form.valid = false;
+            watchedState.form.error = i18n.t('errors.rssInvalid');
+            console.log(`- parsing error: ${error}`);
             console.log('- invalid form state', state);
             break;
 
           default:
-            break;
-            // throw new Error(`##unknown error type: ${error.type}`);
+            console.log('form state =', state);
+            throw new Error(`## unknown error: ${error}`);
         }
       });
   });

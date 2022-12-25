@@ -4,15 +4,19 @@ export default (content) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(content, 'text/xml');
 
-  if (doc.querySelector('parsererror')) {
+  const parsingError = doc.querySelector('parsererror');
+  if (parsingError) {
     throw new Error('parsingError');
   }
 
   const feed = {
     title: doc.querySelector('title').textContent,
     description: doc.querySelector('description').textContent,
+    link: doc.querySelector('link').textContent,
     id: uniqueId(),
   };
+
+  // console.log(feed);
 
   const feedItems = doc.querySelectorAll('item');
   const posts = [...feedItems].map((item) => ({
@@ -22,6 +26,8 @@ export default (content) => {
     id: uniqueId(),
     feedId: feed.id,
   }));
+
+  // console.log(posts);
 
   return { feed, posts };
 };

@@ -13,22 +13,26 @@ const renderErrors = (elements, error) => {
   input.focus();
 };
 
-const renderFeeds = (elements, state, i18n) => {
-  const {
-    form,
-    feeds,
-    feedback,
-    input,
-  } = elements;
+const renderValidForm = (elements, value, i18n) => {
+  const { form, feedback, input } = elements;
 
-  input.classList.remove('is-invalid');
-  feedback.textContent = '';
-  feedback.classList.remove('text-danger');
-  feedback.classList.add('text-success');
-  feedback.textContent = i18n.t('successed.rssLoaded');
+  if (value === true) {
+    feedback.textContent = '';
+    input.classList.remove('is-invalid');
+    feedback.classList.remove('text-danger');
+    feedback.classList.add('text-success');
+    feedback.textContent = i18n.t('successed.rssLoaded');
+
+    form.reset();
+    input.focus();
+  }
 
   form.reset();
   input.focus();
+};
+
+const renderFeeds = (elements, state, i18n) => {
+  const { feeds } = elements;
 
   const container = document.createElement('div');
   container.classList.add('card', 'border-0');
@@ -59,22 +63,69 @@ const renderFeeds = (elements, state, i18n) => {
     p.classList.add('m-0', 'small', 'text-black-50');
     p.textContent = feed.description;
 
-    return ul.append(li, p);
+    return li.append(h3, p);
   });
 
   feeds.append(container);
 };
 
+const renderPosts = (elements, state, i18n) => {
+  const { posts } = elements;
+
+  const container = document.createElement('div');
+  container.classList.add('car', 'border-0');
+
+  const cardBody = document.createElement('div');
+  cardBody.classList.add('card-body');
+
+  const h2 = document.createElement('h2');
+  h2.textContent = i18n.t('elements.posts');
+  h2.classList.add('card-title', 'h4');
+  cardBody.append(h2);
+
+  const ul = document.createElement('ul');
+  ul.classList.add('list-group', 'border-0', 'rounded-0');
+
+  container.append(cardBody, ul);
+
+  state.posts[0].map((post) => {
+    const li = document.createElement('li');
+    li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
+    ul.append(li);
+
+    const a = document.createElement('a');
+    a.classList.add('fw-bold');
+    a.setAttribute('href', `${post.link}`);
+    a.setAttribute('data-id', `${post.id}`);
+    a.setAttribute('target', '_blanc');
+    a.setAttribute('rel', 'noopener noreferrer');
+    a.textContent = post.title;
+
+    const button = document.createElement('button');
+    button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+    button.setAttribute('type', 'button');
+    button.setAttribute('data-id', `${post.id}`);
+    button.setAttribute('data-bs-toggle', 'modal');
+    button.setAttribute('data-bs-target', '#modal');
+    button.textContent = i18n.t('elements.postButton');
+
+    return li.append(a, button);
+  });
+
+  posts.append(container);
+};
+
 const render = (elements, state, i18n) => (path, value) => {
   switch (path) {
     case 'form.valid':
+      renderValidForm(elements, value, i18n);
       break;
 
     case 'form.error':
-      renderErrors(elements, value);
+      renderErrors(elements, value, i18n);
       break;
 
-    case 'form.url':
+    case 'form.urls':
       break;
 
     case 'feeds':
@@ -82,6 +133,7 @@ const render = (elements, state, i18n) => (path, value) => {
       break;
 
     case 'posts':
+      renderPosts(elements, state, i18n);
       break;
 
     default:
