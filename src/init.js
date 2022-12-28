@@ -69,32 +69,31 @@ export default () => {
       .notOneOf(watchedState.form.urls, i18n.t('errors.rssDuplicated'));
 
     schema.validate(currentUrl)
-      .then(() => {
-        watchedState.form.valid = true;
-        watchedState.form.urls.push(currentUrl);
-        return loadRss(currentUrl);
-      })
+      .then(() => loadRss(currentUrl))
       .then((response) => {
         const { feed, posts } = parse(response);
         watchedState.feeds = [...watchedState.feeds, feed];
         watchedState.posts = [...watchedState.posts, posts];
 
+        watchedState.form.valid = true;
+        watchedState.form.urls.push(currentUrl);
+
         console.log(state);
       })
       .catch((error) => {
-        // console.log(error);
+        // console.log(error.type);
         switch (error.type) {
           case 'url':
             watchedState.form.valid = false;
             watchedState.form.error = i18n.t('errors.urlInvalid');
-            console.log(`- validation error: ${error}`);
+            console.log(`- url validation error: ${error}`);
             console.log('- invalid form state', state);
             break;
 
           case 'notOneOf':
             watchedState.form.valid = false;
             watchedState.form.error = i18n.t('errors.rssDuplicated');
-            console.log(`- validation error: ${error}`);
+            console.log(`- not one of error: ${error}`);
             console.log('- invalid form state', state);
             break;
 
