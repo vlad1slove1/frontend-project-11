@@ -6,7 +6,9 @@ export default (content) => {
 
   const parsingError = doc.querySelector('parsererror');
   if (parsingError) {
-    throw new Error('parsingError');
+    const error = new Error();
+    error.type = 'parsingError';
+    throw error;
   }
 
   const feed = {
