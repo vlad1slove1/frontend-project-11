@@ -115,6 +115,48 @@ const renderPosts = (elements, state, i18n) => {
   posts.append(container);
 };
 
+const clickedPostsHandler = (state) => {
+  const { clickedPost } = state.modal;
+
+  const handlePost = (post) => {
+    post.classList.replace('fw-bold', 'fw-normal');
+    post.classList.add('link-secondary');
+  };
+
+  return handlePost(clickedPost);
+};
+
+const renderModal = (state, i18n) => {
+  const modalTitle = document.querySelector('.modal-title');
+  const modalBody = document.querySelector('.modal-body');
+  const modalFooter = document.querySelector('.modal-footer');
+  const modalLinkButton = modalFooter.querySelector('a');
+  const modalCloseButton = modalFooter.querySelector('button');
+
+  modalLinkButton.textContent = i18n.t('modal.linkButton');
+  modalCloseButton.textContent = i18n.t('modal.closeButton');
+
+  state.posts[0].map((post) => {
+    const {
+      title,
+      description,
+      link,
+      id,
+    } = post;
+
+    // console.log(title, description, link, id);
+    // console.log(`POST ID = ${state.modal.clickedPostId}`);
+
+    if (id === state.modal.clickedPostId) {
+      modalTitle.textContent = title;
+      modalBody.textContent = description;
+      modalLinkButton.setAttribute('href', link);
+    }
+
+    return state;
+  });
+};
+
 const render = (elements, state, i18n) => (path, value) => {
   switch (path) {
     case 'form.valid':
@@ -134,6 +176,14 @@ const render = (elements, state, i18n) => (path, value) => {
 
     case 'posts':
       renderPosts(elements, state, i18n);
+      break;
+
+    case 'modal.clickedPost':
+      clickedPostsHandler(state);
+      break;
+
+    case 'modal.clickedPostId':
+      renderModal(state, i18n);
       break;
 
     default:

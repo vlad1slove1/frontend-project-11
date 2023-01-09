@@ -15,6 +15,10 @@ export default () => {
     },
     feeds: [],
     posts: [],
+    modal: {
+      clickedPost: '',
+      clickedPostId: '',
+    },
   };
 
   const elements = {
@@ -78,7 +82,16 @@ export default () => {
         watchedState.form.valid = true;
         watchedState.form.urls.push(currentUrl);
 
-        console.log(state);
+        // console.log(state);
+      })
+      .then(() => {
+        elements.posts.addEventListener('click', (evt) => {
+          const { target } = evt;
+          watchedState.modal.clickedPost = target;
+          watchedState.modal.clickedPostId = target.dataset.id;
+
+          // console.log(state.modal);
+        });
       })
       .catch((error) => {
         // console.log(error.type);
@@ -100,7 +113,7 @@ export default () => {
           case 'parsingError':
             watchedState.form.valid = false;
             watchedState.form.error = i18n.t('errors.rssInvalid');
-            console.log(`- parsing error: ${error}`);
+            console.log(`- parsing error: ${i18n.t('errors.rssInvalid')}`);
             console.log('- invalid form state', state);
             break;
 
