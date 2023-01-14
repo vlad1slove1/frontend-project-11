@@ -32,7 +32,8 @@ const renderValidForm = (elements, value, i18n) => {
 };
 
 const renderFeeds = (elements, state, i18n) => {
-  const { feeds } = elements;
+  const { form, input, feeds } = elements;
+  feeds.innerHTML = '';
 
   const container = document.createElement('div');
   container.classList.add('card', 'border-0');
@@ -67,10 +68,13 @@ const renderFeeds = (elements, state, i18n) => {
   });
 
   feeds.append(container);
+  form.reset();
+  input.focus();
 };
 
 const renderPosts = (elements, state, i18n) => {
-  const { posts } = elements;
+  const { form, input, posts } = elements;
+  posts.innerHTML = '';
 
   const container = document.createElement('div');
   container.classList.add('car', 'border-0');
@@ -87,8 +91,9 @@ const renderPosts = (elements, state, i18n) => {
   ul.classList.add('list-group', 'border-0', 'rounded-0');
 
   container.append(cardBody, ul);
+  // console.log(JSON.stringify(state.posts, null, 2));
 
-  state.posts[0].map((post) => {
+  state.posts.map((post) => {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     ul.append(li);
@@ -113,6 +118,8 @@ const renderPosts = (elements, state, i18n) => {
   });
 
   posts.append(container);
+  form.reset();
+  input.focus();
 };
 
 const clickedPostsHandler = (state) => {
@@ -136,7 +143,7 @@ const renderModal = (state, i18n) => {
   modalLinkButton.textContent = i18n.t('modal.linkButton');
   modalCloseButton.textContent = i18n.t('modal.closeButton');
 
-  state.posts[0].map((post) => {
+  state.posts.map((post) => {
     const {
       title,
       description,

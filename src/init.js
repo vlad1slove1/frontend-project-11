@@ -77,12 +77,12 @@ export default () => {
       .then((response) => {
         const { feed, posts } = parse(response);
         watchedState.feeds = [...watchedState.feeds, feed];
-        watchedState.posts = [...watchedState.posts, posts];
+        watchedState.posts = [...watchedState.posts, ...posts];
 
         watchedState.form.valid = true;
         watchedState.form.urls.push(currentUrl);
 
-        // console.log(state);
+        // console.log(state.posts);
       })
       .then(() => {
         elements.posts.addEventListener('click', (evt) => {
