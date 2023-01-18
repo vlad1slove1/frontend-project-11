@@ -193,6 +193,9 @@ const render = (elements, state, i18n) => (path, value) => {
       renderModal(state, i18n);
       break;
 
+    case 'delayTime':
+      break;
+
     default:
       throw new Error(`unknown path ${path}`);
   }

@@ -19,6 +19,7 @@ export default () => {
       clickedPost: '',
       clickedPostId: '',
     },
+    delayTime: 5000,
   };
 
   const elements = {
@@ -59,6 +60,32 @@ export default () => {
       });
   };
 
+  const updatePosts = (response, posts) => {
+    const newPosts = response.posts;
+    const loadedPostsId = [];
+
+    posts.map((post) => loadedPostsId.push(post.title));
+    const diffPosts = newPosts.filter((post) => !loadedPostsId.includes(post.title));
+
+    if (diffPosts.length !== 0) {
+      diffPosts.map((diffPost) => posts.push(diffPost));
+    }
+
+    console.group('diff posts');
+    console.log(diffPosts);
+    console.log('*********');
+    console.log(posts);
+    console.groupEnd();
+  };
+
+  const reloadSource = (currentUrl, posts) => {
+    Promise.resolve(currentUrl)
+      .then(() => loadRss(currentUrl))
+      .then((response) => parse(response))
+      .then((response) => updatePosts(response, posts))
+      .then((setTimeout(() => reloadSource(currentUrl, posts), state.delayTime)));
+  };
+
   const watchedState = view(state, elements, i18n);
 
   elements.form.addEventListener('submit', (event) => {
@@ -93,6 +120,7 @@ export default () => {
           // console.log(state.modal);
         });
       })
+      .then(() => setTimeout(reloadSource(currentUrl, watchedState.posts), state.delayTime))
       .catch((error) => {
         // console.log(error.type);
         switch (error.type) {
