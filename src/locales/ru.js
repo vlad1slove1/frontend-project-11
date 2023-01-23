@@ -9,7 +9,11 @@ export default {
       rssDuplicated: 'RSS уже существует',
     },
     elements: {
-      button: 'Добавить',
+      title: 'RSS агрегатор',
+      subTitle: 'Начните читать RSS сегодня! Это легко, это красиво.',
+      rssLink: 'Ссылка RSS',
+      mainButton: 'Добавить',
+      exampleUrl: 'Пример: https://ru.hexlet.io/lessons.rss',
       feeds: 'Фиды',
       posts: 'Посты',
       postButton: 'Просмотр',

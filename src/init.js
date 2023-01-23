@@ -88,6 +88,22 @@ export default () => {
 
   const watchedState = view(state, elements, i18n);
 
+  window.addEventListener('DOMContentLoaded', () => {
+    const selectorsToTranslate = {
+      title: document.querySelector('.title'),
+      subTitle: document.querySelector('.subTitle'),
+      rssLink: document.querySelector('.rssLink'),
+      exampleUrl: document.querySelector('.exampleUrl'),
+      mainButton: document.querySelector('.mainButton'),
+    };
+
+    selectorsToTranslate.title.textContent = i18n.t('elements.title');
+    selectorsToTranslate.subTitle.textContent = i18n.t('elements.subTitle');
+    selectorsToTranslate.rssLink.textContent = i18n.t('elements.rssLink');
+    selectorsToTranslate.exampleUrl.textContent = i18n.t('elements.exampleUrl');
+    selectorsToTranslate.mainButton.textContent = i18n.t('elements.mainButton');
+  });
+
   elements.form.addEventListener('submit', (event) => {
     event.preventDefault();
 
