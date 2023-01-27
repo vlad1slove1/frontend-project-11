@@ -7,6 +7,7 @@ export default {
       urlInvalid: 'Must be a valid URL',
       rssInvalid: 'Source contains invalid RSS',
       rssDuplicated: 'RSS already exists',
+      networkError: 'Network error',
     },
     elements: {
       title: 'RSS aggregator',

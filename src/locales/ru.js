@@ -7,6 +7,7 @@ export default {
       urlInvalid: 'Ссылка должна быть валидным URL',
       rssInvalid: 'Ресурс не содержит валидный RSS',
       rssDuplicated: 'RSS уже существует',
+      networkError: 'Ошибка сети',
     },
     elements: {
       title: 'RSS агрегатор',
