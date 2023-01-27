@@ -91,8 +91,6 @@ const renderPosts = (elements, state, i18n) => {
   ul.classList.add('list-group', 'border-0', 'rounded-0');
 
   container.append(cardBody, ul);
-  // console.log(JSON.stringify(state.posts, null, 2));
-
   state.posts.map((post) => {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
@@ -150,9 +148,6 @@ const renderModal = (state, i18n) => {
       link,
       id,
     } = post;
-
-    // console.log(title, description, link, id);
-    // console.log(`POST ID = ${state.modal.clickedPostId}`);
 
     if (id === state.modal.clickedPostId) {
       modalTitle.textContent = title;
