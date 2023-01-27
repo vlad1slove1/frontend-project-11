@@ -65,14 +65,14 @@ export default () => {
     const proxy = newUrl.href;
 
     return axios.get(proxy)
-      .then((response) => {
-        if (response.statusText === 'OK') return response.data.contents;
+      .then((response) => response.data.contents)
+      .catch((error) => {
+        if (error.name === 'AxiosError') {
+          const networkError = new Error();
+          networkError.type = 'networkError';
+          throw networkError;
+        }
 
-        const networkError = new Error();
-        networkError.type = 'networkError';
-        throw networkError;
-      })
-      .catch(() => {
         throw new Error('parsingError');
       });
   };
@@ -102,7 +102,7 @@ export default () => {
       .then(() => loadRss(currentUrl))
       .then((response) => parse(response))
       .then((response) => updatePosts(response, posts))
-      .then((setTimeout(() => reloadSource(currentUrl, posts), delayTime)));
+      .then(() => setTimeout(reloadSource(currentUrl, posts), delayTime));
   };
 
   const watchedState = view(state, elements, i18n);
