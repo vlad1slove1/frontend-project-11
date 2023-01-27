@@ -2,6 +2,7 @@ import 'bootstrap';
 import i18next from 'i18next';
 import * as yup from 'yup';
 import axios from 'axios';
+import { uniqueId } from 'lodash';
 import view from './view.js';
 import resources from './locales/resources.js';
 import parse from './parse.js';
@@ -19,7 +20,6 @@ export default () => {
       clickedPost: '',
       clickedPostId: '',
     },
-    delayTime: 5000,
   };
 
   const elements = {
@@ -29,6 +29,13 @@ export default () => {
     feeds: document.querySelector('.feeds'),
     posts: document.querySelector('.posts'),
     feedback: document.querySelector('.feedback'),
+    selectorsToTranslate: {
+      title: document.querySelector('.title'),
+      subTitle: document.querySelector('.subTitle'),
+      rssLink: document.querySelector('.rssLink'),
+      exampleUrl: document.querySelector('.exampleUrl'),
+      mainButton: document.querySelector('.mainButton'),
+    },
   };
 
   const i18n = i18next.createInstance();
@@ -50,11 +57,21 @@ export default () => {
   });
 
   const loadRss = (url) => {
-    const encodedUrl = encodeURIComponent(url);
-    const proxy = `https://allorigins.hexlet.app/get?disableCache=true&url=${encodedUrl}`;
+    const newUrl = new URL('https://allorigins.hexlet.app');
+    newUrl.pathname = '/get';
+    newUrl.searchParams.append('disableCache', true);
+    newUrl.searchParams.append('url', url);
+
+    const proxy = newUrl.href;
 
     return axios.get(proxy)
-      .then((response) => response.data.contents)
+      .then((response) => {
+        if (response.statusText === 'OK') return response.data.contents;
+
+        const networkError = new Error();
+        networkError.type = 'networkError';
+        throw networkError;
+      })
       .catch(() => {
         throw new Error('parsingError');
       });
@@ -62,10 +79,10 @@ export default () => {
 
   const updatePosts = (response, posts) => {
     const newPosts = response.posts;
-    const loadedPostsId = [];
+    const loadedPostsTitles = [];
 
-    posts.map((post) => loadedPostsId.push(post.title));
-    const diffPosts = newPosts.filter((post) => !loadedPostsId.includes(post.title));
+    posts.map((post) => loadedPostsTitles.push(post.title));
+    const diffPosts = newPosts.filter((post) => !loadedPostsTitles.includes(post.title));
 
     if (diffPosts.length !== 0) {
       diffPosts.map((diffPost) => posts.push(diffPost));
@@ -78,30 +95,32 @@ export default () => {
     console.groupEnd();
   };
 
+  const delayTime = 5000;
+
   const reloadSource = (currentUrl, posts) => {
     Promise.resolve(currentUrl)
       .then(() => loadRss(currentUrl))
       .then((response) => parse(response))
       .then((response) => updatePosts(response, posts))
-      .then((setTimeout(() => reloadSource(currentUrl, posts), state.delayTime)));
+      .then((setTimeout(() => reloadSource(currentUrl, posts), delayTime)));
   };
 
   const watchedState = view(state, elements, i18n);
 
   window.addEventListener('DOMContentLoaded', () => {
-    const selectorsToTranslate = {
-      title: document.querySelector('.title'),
-      subTitle: document.querySelector('.subTitle'),
-      rssLink: document.querySelector('.rssLink'),
-      exampleUrl: document.querySelector('.exampleUrl'),
-      mainButton: document.querySelector('.mainButton'),
-    };
+    const {
+      title,
+      subTitle,
+      rssLink,
+      exampleUrl,
+      mainButton,
+    } = elements.selectorsToTranslate;
 
-    selectorsToTranslate.title.textContent = i18n.t('elements.title');
-    selectorsToTranslate.subTitle.textContent = i18n.t('elements.subTitle');
-    selectorsToTranslate.rssLink.textContent = i18n.t('elements.rssLink');
-    selectorsToTranslate.exampleUrl.textContent = i18n.t('elements.exampleUrl');
-    selectorsToTranslate.mainButton.textContent = i18n.t('elements.mainButton');
+    title.textContent = i18n.t('elements.title');
+    subTitle.textContent = i18n.t('elements.subTitle');
+    rssLink.textContent = i18n.t('elements.rssLink');
+    exampleUrl.textContent = i18n.t('elements.exampleUrl');
+    mainButton.textContent = i18n.t('elements.mainButton');
   });
 
   elements.form.addEventListener('submit', (event) => {
@@ -119,26 +138,30 @@ export default () => {
       .then(() => loadRss(currentUrl))
       .then((response) => {
         const { feed, posts } = parse(response);
+
+        const feedId = uniqueId();
+        const postId = uniqueId();
+        feed.id = feedId;
+        posts.forEach((post) => {
+          post.id = postId;
+          post.feedId = feedId;
+        });
+
         watchedState.feeds = [...watchedState.feeds, feed];
         watchedState.posts = [...watchedState.posts, ...posts];
 
         watchedState.form.valid = true;
         watchedState.form.urls.push(currentUrl);
-
-        // console.log(state.posts);
       })
       .then(() => {
         elements.posts.addEventListener('click', (evt) => {
           const { target } = evt;
           watchedState.modal.clickedPost = target;
           watchedState.modal.clickedPostId = target.dataset.id;
-
-          // console.log(state.modal);
         });
       })
       .then(() => setTimeout(reloadSource(currentUrl, watchedState.posts), state.delayTime))
       .catch((error) => {
-        // console.log(error.type);
         switch (error.type) {
           case 'url':
             watchedState.form.valid = false;
@@ -161,6 +184,13 @@ export default () => {
             console.log('- invalid form state', state);
             break;
 
+          case 'networkError':
+            watchedState.form.valid = false;
+            watchedState.form.error = i18n.t('errors.networkError');
+            console.log(`- network error: ${i18n.t('errors.networkError')}`);
+            console.log('- invalid form state', state);
+            break;
+
           default:
             console.log('form state =', state);
             throw new Error(`## unknown error: ${error}`);
@@ -168,3 +198,5 @@ export default () => {
       });
   });
 };
+
+// http://lorem-rss.herokuapp.com/feed?unit=second&interval=5&length=2 // => generate 2 feeds every 5 sec
