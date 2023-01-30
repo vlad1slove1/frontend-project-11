@@ -56,6 +56,8 @@ export default () => {
     },
   });
 
+  const watchedState = view(state, elements, i18n);
+
   const loadRss = (url) => {
     const newUrl = new URL('https://allorigins.hexlet.app');
     newUrl.pathname = '/get';
@@ -66,14 +68,34 @@ export default () => {
 
     return axios.get(proxy)
       .then((response) => response.data.contents)
+      .then((response) => parse(response))
+      .then((response) => {
+        const { feed, posts } = response;
+
+        const feedId = uniqueId();
+        feed.id = feedId;
+
+        posts.forEach((post) => {
+          const postId = uniqueId();
+          post.id = postId;
+          post.feedId = feedId;
+        });
+
+        console.log(`FEED ID = ${feed.id}`, posts);
+
+        return response;
+      })
       .catch((error) => {
         if (error.name === 'AxiosError') {
           const networkError = new Error();
           networkError.type = 'networkError';
           throw networkError;
         }
+        if (error.name === 'parsingError') {
+          throw new Error('parsingError');
+        }
 
-        throw new Error('parsingError');
+        console.error(error);
       });
   };
 
@@ -87,12 +109,13 @@ export default () => {
     if (diffPosts.length !== 0) {
       diffPosts.map((diffPost) => posts.push(diffPost));
     }
-
+    /*
     console.group('diff posts');
     console.log(diffPosts);
     console.log('*********');
     console.log(posts);
     console.groupEnd();
+    */
   };
 
   const delayTime = 5000;
@@ -100,12 +123,9 @@ export default () => {
   const reloadSource = (currentUrl, posts) => {
     Promise.resolve(currentUrl)
       .then(() => loadRss(currentUrl))
-      .then((response) => parse(response))
       .then((response) => updatePosts(response, posts))
-      .then(() => setTimeout(reloadSource(currentUrl, posts), delayTime));
+      .then((setTimeout(() => reloadSource(currentUrl, posts), delayTime)));
   };
-
-  const watchedState = view(state, elements, i18n);
 
   window.addEventListener('DOMContentLoaded', () => {
     const {
@@ -137,15 +157,7 @@ export default () => {
     schema.validate(currentUrl)
       .then(() => loadRss(currentUrl))
       .then((response) => {
-        const { feed, posts } = parse(response);
-
-        const feedId = uniqueId();
-        const postId = uniqueId();
-        feed.id = feedId;
-        posts.forEach((post) => {
-          post.id = postId;
-          post.feedId = feedId;
-        });
+        const { feed, posts } = response;
 
         watchedState.feeds = [...watchedState.feeds, feed];
         watchedState.posts = [...watchedState.posts, ...posts];
@@ -160,7 +172,7 @@ export default () => {
           watchedState.modal.clickedPostId = target.dataset.id;
         });
       })
-      .then(() => setTimeout(reloadSource(currentUrl, watchedState.posts), state.delayTime))
+      .then(() => setTimeout(reloadSource(currentUrl, watchedState.posts), delayTime))
       .catch((error) => {
         switch (error.type) {
           case 'url':
@@ -193,10 +205,10 @@ export default () => {
 
           default:
             console.log('form state =', state);
-            throw new Error(`## unknown error: ${error}`);
+            throw new Error(`## unknown error: ${error.name}`);
         }
       });
   });
 };
 
-// http://lorem-rss.herokuapp.com/feed?unit=second&interval=5&length=2 // => generate 2 feeds every 5 sec
+// http://lorem-rss.herokuapp.com/feed?unit=second&interval=5&length=1 // => generate 1 feed every 5 sec
