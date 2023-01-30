@@ -67,8 +67,11 @@ export default () => {
     const proxy = newUrl.href;
 
     return axios.get(proxy)
-      .then((response) => response.data.contents)
-      .then((response) => parse(response))
+      .then((response) => {
+        const content = response.data.contents;
+
+        return parse(content);
+      })
       .then((response) => {
         const { feed, posts } = response;
 
@@ -81,8 +84,6 @@ export default () => {
           post.feedId = feedId;
         });
 
-        console.log(`FEED ID = ${feed.id}`, posts);
-
         return response;
       })
       .catch((error) => {
@@ -91,11 +92,14 @@ export default () => {
           networkError.type = 'networkError';
           throw networkError;
         }
+
         if (error.name === 'parsingError') {
-          throw new Error('parsingError');
+          const parsingError = new Error();
+          parsingError.type = 'parsingError';
+          throw parsingError;
         }
 
-        console.error(error);
+        console.log(error.message);
       });
   };
 
@@ -109,13 +113,12 @@ export default () => {
     if (diffPosts.length !== 0) {
       diffPosts.map((diffPost) => posts.push(diffPost));
     }
-    /*
+
     console.group('diff posts');
     console.log(diffPosts);
     console.log('*********');
     console.log(posts);
     console.groupEnd();
-    */
   };
 
   const delayTime = 5000;
@@ -204,8 +207,8 @@ export default () => {
             break;
 
           default:
-            console.log('form state =', state);
-            throw new Error(`## unknown error: ${error.name}`);
+            console.log(error.type, error.message);
+            // throw new Error(`## unknown error: ${error.message}`);
         }
       });
   });
