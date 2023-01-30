@@ -20,7 +20,6 @@ export default (content) => {
     title: item.querySelector('title').textContent,
     description: item.querySelector('description').textContent,
     link: item.querySelector('link').textContent,
-    feedId: feed.id,
   }));
 
   return { feed, posts };
