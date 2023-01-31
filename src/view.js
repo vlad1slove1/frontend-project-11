@@ -77,7 +77,7 @@ const renderPosts = (elements, state, i18n) => {
   posts.innerHTML = '';
 
   const container = document.createElement('div');
-  container.classList.add('car', 'border-0');
+  container.classList.add('card', 'border-0');
 
   const cardBody = document.createElement('div');
   cardBody.classList.add('card-body');
@@ -122,13 +122,15 @@ const renderPosts = (elements, state, i18n) => {
 
 const clickedPostsHandler = (state) => {
   const { clickedPost } = state.modal;
+  const closestParent = clickedPost.closest('li');
+  const linkElement = closestParent.querySelector('a');
 
-  const handlePost = (post) => {
-    post.classList.replace('fw-bold', 'fw-normal');
-    post.classList.add('link-secondary');
+  const handlePost = (element) => {
+    element.classList.replace('fw-bold', 'fw-normal');
+    element.classList.add('link-secondary');
   };
 
-  return handlePost(clickedPost);
+  return handlePost(linkElement);
 };
 
 const renderModal = (state, i18n) => {
