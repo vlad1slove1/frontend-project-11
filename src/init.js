@@ -208,7 +208,7 @@ export default () => {
 
           default:
             console.log(error.type, error.message);
-            // throw new Error(`## unknown error: ${error.message}`);
+            throw new Error(`## unknown error: ${error.message}`);
         }
       });
   });
