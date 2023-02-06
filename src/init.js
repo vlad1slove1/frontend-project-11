@@ -1,11 +1,9 @@
 import 'bootstrap';
 import i18next from 'i18next';
 import * as yup from 'yup';
-import axios from 'axios';
-import { uniqueId } from 'lodash';
-import view from './view.js';
+import view from './renders/view.js';
 import resources from './locales/resources.js';
-import parse from './parse.js';
+import { loadRss, reloadSource } from './utils.js';
 
 export default () => {
   const state = {
@@ -13,6 +11,7 @@ export default () => {
       valid: false,
       error: null,
       urls: [],
+      processState: 'formFilling',
     },
     feeds: [],
     posts: [],
@@ -21,6 +20,8 @@ export default () => {
       clickedPostId: '',
     },
   };
+
+  const delayTime = 5000;
 
   const elements = {
     form: document.querySelector('.rss-form'),
@@ -35,6 +36,12 @@ export default () => {
       rssLink: document.querySelector('.rssLink'),
       exampleUrl: document.querySelector('.exampleUrl'),
       mainButton: document.querySelector('.mainButton'),
+    },
+    modalSelectors: {
+      modalTitle: document.querySelector('.modal-title'),
+      modalBody: document.querySelector('.modal-body'),
+      modalLinkButton: document.querySelector('.modal-footer').querySelector('a'),
+      modalCloseButton: document.querySelector('.modal-footer').querySelector('button'),
     },
   };
 
@@ -57,78 +64,6 @@ export default () => {
   });
 
   const watchedState = view(state, elements, i18n);
-
-  const loadRss = (url) => {
-    const newUrl = new URL('https://allorigins.hexlet.app');
-    newUrl.pathname = '/get';
-    newUrl.searchParams.append('disableCache', true);
-    newUrl.searchParams.append('url', url);
-
-    const proxy = newUrl.href;
-
-    return axios.get(proxy)
-      .then((response) => {
-        const content = response.data.contents;
-
-        return parse(content);
-      })
-      .then((response) => {
-        const { feed, posts } = response;
-
-        const feedId = uniqueId();
-        feed.id = feedId;
-
-        posts.forEach((post) => {
-          const postId = uniqueId();
-          post.id = postId;
-          post.feedId = feedId;
-        });
-
-        return response;
-      })
-      .catch((error) => {
-        if (error.name === 'AxiosError') {
-          const networkError = new Error();
-          networkError.type = 'networkError';
-          throw networkError;
-        }
-
-        if (error.name === 'parsingError') {
-          const parsingError = new Error();
-          parsingError.type = 'parsingError';
-          throw parsingError;
-        }
-
-        console.log(error.message);
-      });
-  };
-
-  const updatePosts = (response, posts) => {
-    const newPosts = response.posts;
-    const loadedPostsTitles = [];
-
-    posts.map((post) => loadedPostsTitles.push(post.title));
-    const diffPosts = newPosts.filter((post) => !loadedPostsTitles.includes(post.title));
-
-    if (diffPosts.length !== 0) {
-      diffPosts.map((diffPost) => posts.push(diffPost));
-    }
-
-    console.group('diff posts');
-    console.log(diffPosts);
-    console.log('*********');
-    console.log(posts);
-    console.groupEnd();
-  };
-
-  const delayTime = 5000;
-
-  const reloadSource = (currentUrl, posts) => {
-    Promise.resolve(currentUrl)
-      .then(() => loadRss(currentUrl))
-      .then((response) => updatePosts(response, posts))
-      .then((setTimeout(() => reloadSource(currentUrl, posts), delayTime)));
-  };
 
   window.addEventListener('DOMContentLoaded', () => {
     const {
@@ -158,58 +93,43 @@ export default () => {
       .notOneOf(watchedState.form.urls, i18n.t('errors.rssDuplicated'));
 
     schema.validate(currentUrl)
-      .then(() => loadRss(currentUrl))
+      .then(() => {
+        watchedState.form.valid = true;
+        watchedState.form.processState = 'dataSending';
+
+        return loadRss(currentUrl);
+      })
       .then((response) => {
+        watchedState.form.processState = 'dataSent';
         const { feed, posts } = response;
 
         watchedState.feeds = [...watchedState.feeds, feed];
         watchedState.posts = [...watchedState.posts, ...posts];
 
+        watchedState.form.processState = 'rssLoaded';
         watchedState.form.valid = true;
         watchedState.form.urls.push(currentUrl);
+
+        return response;
       })
       .then(() => {
         elements.posts.addEventListener('click', (evt) => {
           const { target } = evt;
-          watchedState.modal.clickedPost = target;
-          watchedState.modal.clickedPostId = target.dataset.id;
+
+          if (target.nodeName === 'BUTTON') {
+            watchedState.modal.clickedPost = target;
+            watchedState.modal.clickedPostId = target.dataset.id;
+          }
+
+          if (target.nodeName === 'A') {
+            target.classList.replace('fw-bold', 'fw-normal');
+            target.classList.add('link-secondary');
+          }
         });
       })
       .then(() => setTimeout(reloadSource(currentUrl, watchedState.posts), delayTime))
       .catch((error) => {
-        switch (error.type) {
-          case 'url':
-            watchedState.form.valid = false;
-            watchedState.form.error = i18n.t('errors.urlInvalid');
-            console.log(`- url validation error: ${error}`);
-            console.log('- invalid form state', state);
-            break;
-
-          case 'notOneOf':
-            watchedState.form.valid = false;
-            watchedState.form.error = i18n.t('errors.rssDuplicated');
-            console.log(`- not one of error: ${error}`);
-            console.log('- invalid form state', state);
-            break;
-
-          case 'parsingError':
-            watchedState.form.valid = false;
-            watchedState.form.error = i18n.t('errors.rssInvalid');
-            console.log(`- parsing error: ${i18n.t('errors.rssInvalid')}`);
-            console.log('- invalid form state', state);
-            break;
-
-          case 'networkError':
-            watchedState.form.valid = false;
-            watchedState.form.error = i18n.t('errors.networkError');
-            console.log(`- network error: ${i18n.t('errors.networkError')}`);
-            console.log('- invalid form state', state);
-            break;
-
-          default:
-            console.log(error.type, error.message);
-            throw new Error(`## unknown error: ${error.message}`);
-        }
+        watchedState.form.error = error.type;
       });
   });
 };
