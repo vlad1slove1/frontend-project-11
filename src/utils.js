@@ -52,17 +52,18 @@ const updatePosts = (response, posts) => {
   const newPosts = response.posts;
   const loadedPostsTitles = [];
 
-  posts.map((post) => loadedPostsTitles.push(post.title));
+  posts.forEach((post) => loadedPostsTitles.push(post.title));
   const diffPosts = newPosts.filter((post) => !loadedPostsTitles.includes(post.title));
 
   if (diffPosts.length !== 0) {
-    diffPosts.map((diffPost) => posts.push(diffPost));
+    diffPosts.forEach((diffPost) => posts.push(diffPost));
   }
 };
 
-export const reloadSource = (currentUrl, posts) => {
-  Promise.resolve(currentUrl)
-    .then(() => loadRss(currentUrl))
-    .then((response) => updatePosts(response, posts))
-    .then((setTimeout(() => reloadSource(currentUrl, posts), 5000)));
+export const reloadSource = (formUrls, posts) => {
+  const requests = formUrls.map((item) => loadRss(item));
+
+  Promise.all(requests)
+    .then((responses) => responses.forEach((response) => updatePosts(response, posts)))
+    .finally((setTimeout(() => reloadSource(formUrls, posts), 5000)));
 };
