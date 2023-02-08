@@ -112,25 +112,25 @@ export default () => {
 
         return response;
       })
-      .then(() => {
-        elements.posts.addEventListener('click', (evt) => {
-          const { target } = evt;
-
-          if (target.nodeName === 'BUTTON') {
-            watchedState.modal.clickedPost = target;
-            watchedState.modal.clickedPostId = target.dataset.id;
-          }
-
-          if (target.nodeName === 'A') {
-            target.classList.replace('fw-bold', 'fw-normal');
-            target.classList.add('link-secondary');
-          }
-        });
-      })
-      .then(() => setTimeout(reloadSource(currentUrl, watchedState.posts), delayTime))
+      // eslint-disable-next-line max-len
+      .finally(() => setTimeout(reloadSource(state.form.urls, watchedState.posts), delayTime))
       .catch((error) => {
         watchedState.form.error = error.type;
       });
+  });
+
+  elements.posts.addEventListener('click', (evt) => {
+    const { target } = evt;
+
+    if (target.nodeName === 'BUTTON') {
+      watchedState.modal.clickedPost = target;
+      watchedState.modal.clickedPostId = target.dataset.id;
+    }
+
+    if (target.nodeName === 'A') {
+      target.classList.replace('fw-bold', 'fw-normal');
+      target.classList.add('link-secondary');
+    }
   });
 };
 
