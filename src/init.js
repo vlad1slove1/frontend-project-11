@@ -112,8 +112,6 @@ export default () => {
 
         return response;
       })
-      // eslint-disable-next-line max-len
-      .finally(() => setTimeout(reloadSource(state.form.urls, watchedState.posts), delayTime))
       .catch((error) => {
         watchedState.form.error = error.type;
       });
@@ -132,6 +130,8 @@ export default () => {
       target.classList.add('link-secondary');
     }
   });
+
+  setTimeout(() => reloadSource(watchedState), delayTime);
 };
 
 // http://lorem-rss.herokuapp.com/feed?unit=second&interval=5&length=1 // => generate 1 feed every 5 sec
