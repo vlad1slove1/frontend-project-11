@@ -60,10 +60,13 @@ const updatePosts = (response, posts) => {
   }
 };
 
-export const reloadSource = (formUrls, posts) => {
-  const requests = formUrls.map((item) => loadRss(item));
+export const reloadSource = (watchedState) => {
+  const { posts } = watchedState;
+  const { urls } = watchedState.form;
+
+  const requests = urls.map((item) => loadRss(item));
 
   Promise.all(requests)
     .then((responses) => responses.forEach((response) => updatePosts(response, posts)))
-    .finally((setTimeout(() => reloadSource(formUrls, posts), 5000)));
+    .finally((setTimeout(() => reloadSource(watchedState), 5000)));
 };
